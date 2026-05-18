@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-)
 
+	hub "github.com/Irayago/Dreams-end/go-game-server/internal/hub"
+)
 
 func main() {
 	err := run()
@@ -18,6 +19,12 @@ func run() error {
 	if err != nil {
 		fmt.Printf("Error returned from run(): %v\n", err)
 	}
+
+	newHub := hub.NewHub()
+	err = newHub.Run()
+	if err != nil {
+		fmt.Printf("Error returned from newHub.Run(): %v\n", err)
+	}
+
 	return err
 }
-

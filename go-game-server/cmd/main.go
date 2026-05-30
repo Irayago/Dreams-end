@@ -21,7 +21,7 @@ func run() error {
 	}
 
 	newHub := hub.NewHub()
-	err = newHub.Run()
+	newHub.Run()
 	if err != nil {
 		fmt.Printf("Error returned from newHub.Run(): %v\n", err)
 	}

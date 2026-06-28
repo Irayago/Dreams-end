@@ -4,6 +4,6 @@ package world
 
 // expand to having different worker structs for different message types or workloads
 type worker struct {
-	id int
-
+	id      int
+	timeout int
 }

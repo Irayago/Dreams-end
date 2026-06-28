@@ -7,8 +7,9 @@ type World struct {
 	clientMap      map[Connection]*Player
 	playerMap      map[string]*Player
 	tickRate       int
-	messageBuffer  chan *Message
-	workerPool     chan *Worker // max of 10000 Workers
+	outboundBuffer chan *Message
+	inboundBuffer  chan *Message
+	workerPool     chan *Worker // concurrent worker pool with max of 100 Workers
 	//test messaging with JSON first before protobuff
 }
 
@@ -24,5 +25,6 @@ type World struct {
 
 type Connection interface {
 	sendData(data []byte)
-	playerId() string
+	getplayerId() string
+	savePlayerState() error
 }

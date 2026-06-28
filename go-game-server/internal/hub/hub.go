@@ -12,9 +12,12 @@ import (
 )
 
 // Hub maintains the set of active clients. Hub registers new client connections to the Client map, and deregisters them when they disconnect.
+/*
+For-Select pattern will be used for handling register, unregister, and broadcast channels.
+*/
 type Hub struct {
-	clients    map[string]*Client		// tracks active ws connections
-	worlds	map[string]*world.World	// tracks available worlds
+	clients    map[string]*Client      // tracks active ws connections
+	worlds     map[string]*world.World // tracks available worlds
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan []byte
@@ -23,7 +26,7 @@ type Hub struct {
 func NewHub() *Hub {
 	return &Hub{
 		clients:    make(map[string]*Client),
-		worlds: make(map[string]*world.World),
+		worlds:     make(map[string]*world.World),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		broadcast:  make(chan []byte, 256),
@@ -40,13 +43,13 @@ func (h *Hub) Run() {
 
 		defer wsConn.CloseNow()
 
-
+		// check if theres already a Client serving the same IP address. If so, then no need to create a new Clinet
 		client := NewClient(wsConn, r)
 		err = h.Register(client)
 		if err != nil {
 			fmt.Println(err)
 		}
-		
+
 	})
 }
 
@@ -65,5 +68,5 @@ func (h *Hub) Register(c *Client) error {
 
 func (h Hub) generateClientId() string {
 	id := uuid.NewString()
-	return	string(id)
+	return string(id)
 }

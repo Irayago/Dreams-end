@@ -1,30 +1,22 @@
 package main
 
 import (
-	"fmt"
-
-	hub "github.com/Irayago/Dreams-end/go-game-server/internal/hub"
+	"github.com/Irayago/Dreams-end/go-game-server/internal/api"
+	"github.com/Irayago/Dreams-end/go-game-server/internal/hub"
 )
 
+const PORT = ":9999"
+
 func main() {
-	err := run()
-	if err != nil {
-		fmt.Printf("Error returned from main(): %v\n", err)
-	}
-
-}
-
-func run() error {
-	_, err := fmt.Println("Hello World!")
-	if err != nil {
-		fmt.Printf("Error returned from run(): %v\n", err)
-	}
+	/*
+		cfg := config.Load()
+		db := store.Connect(cfg.Database)
+	*/
 
 	newHub := hub.NewHub()
-	newHub.Run()
-	if err != nil {
-		fmt.Printf("Error returned from newHub.Run(): %v\n", err)
-	}
+	go newHub.Run()
 
-	return err
+	router := api.NewRouter(newHub) // pass cfg with server configs later
+	router.Run(PORT)                //change to cfg.Port later
+
 }

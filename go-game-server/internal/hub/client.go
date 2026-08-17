@@ -8,23 +8,27 @@ import (
 )
 
 type Client struct {
-	conn     *ws.Conn
-	ipAddr   string
-	playerId string
-	worldId  *world.World
+	conn         *ws.Conn
+	ipAddr       string
+	connectionId string // UUID
+	playerName   string
+	worldId      *world.World
 }
 
 func NewClient(conn *ws.Conn, request *http.Request) *Client {
 	return &Client{
-		conn:   conn,
-		ipAddr: request.RemoteAddr,
+		conn:         conn,
+		ipAddr:       request.RemoteAddr,
+		connectionId: "",
+		playerName:   "",
+		worldId:      nil,
 	}
 }
 
-func (c *Client) sendData(data []byte) {
+func (c *Client) SendData(data []byte) {
 
 }
 
-func (c *Client) getplayerId() string {
-	return c.playerId
+func (c *Client) GetPlayerName() string {
+	return c.playerName
 }

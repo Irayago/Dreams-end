@@ -7,9 +7,10 @@ type World struct {
 	clientMap      map[Connection]*Player
 	playerMap      map[string]*Player
 	tickRate       int
-	outboundBuffer chan *Message
-	inboundBuffer  chan *Message
+	outboundBuffer chan MessageInterface
+	inboundBuffer  chan MessageInterface
 	workerPool     chan *Worker // concurrent worker pool with max of 100 Workers
+	worldStore     WorldStore
 	//test messaging with JSON first before protobuff
 }
 
@@ -23,8 +24,18 @@ type World struct {
 
 // need to figure out message struct and protobuf serialization
 
+type WorldStore interface {
+	SavePlayerState(player *Player) error
+	LoadPlayerState(playerId string) (*Player, error)
+}
+
+type MessageInterface interface {
+	OpCode() int
+	Payload() any
+}
+
 type Connection interface {
-	sendData(data []byte)
-	getplayerId() string
-	savePlayerState() error
+	SendData(data []byte)
+	GetPlayerName() string
+	SavePlayerState() error
 }

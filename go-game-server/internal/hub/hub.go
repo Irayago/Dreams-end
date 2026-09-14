@@ -55,9 +55,9 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.connect:
-			h.Connect(client)
+			h.ConnectClient(client)
 		case client := <-h.disconnect:
-			h.Disconnect(client)
+			h.DisconnectClient(client)
 		case message := <-h.broadcast:
 			for _, client := range h.clients {
 				client.SendData(message)
@@ -92,7 +92,7 @@ func (h *Hub) webSocketHandler(w http.ResponseWriter, r *http.Request) {
 	//go client.writePump()
 }
 
-func (h *Hub) Disconnect(c *Client) error {
+func (h *Hub) DisconnectClient(c *Client) error {
 	if c == nil {
 		return fmt.Errorf("Hub: Client connection nil")
 	}
@@ -107,7 +107,7 @@ func (h *Hub) Disconnect(c *Client) error {
 	return nil
 }
 
-func (h *Hub) Connect(c *Client) error {
+func (h *Hub) ConnectClient(c *Client) error {
 	if c == nil {
 		return fmt.Errorf("Hub: Client connection nil")
 	}

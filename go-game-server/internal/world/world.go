@@ -24,6 +24,21 @@ type World struct {
 
 // need to figure out message struct and protobuf serialization
 
+func NewWorld(worldId int, playerCapacity int, tickRate int, worldStore WorldStore) *World {
+	return &World{
+		WorldId:        worldId,
+		PlayerCount:    0,
+		PlayerCapacity: playerCapacity,
+		clientMap:      make(map[Connection]*Player),
+		playerMap:      make(map[string]*Player),
+		tickRate:       tickRate,
+		outboundBuffer: make(chan MessageInterface, 100),
+		inboundBuffer:  make(chan MessageInterface, 100),
+		workerPool:     make(chan *Worker, 100),
+		worldStore:     worldStore,
+	}
+}
+
 type WorldStore interface {
 	SavePlayerState(player *Player) error
 	LoadPlayerState(playerId string) (*Player, error)

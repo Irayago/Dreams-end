@@ -16,7 +16,7 @@ func main() {
 	newHub := hub.NewHub()
 	go newHub.Run()
 
-	router := api.NewRouter(newHub) // pass cfg with server configs later
-	router.Run(PORT)                //change to cfg.Port later
+	router := api.NewRouter() // pass cfg with server configs later
+	router.Run(PORT)          //change to cfg.Port later
 
 }

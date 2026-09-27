@@ -2,12 +2,8 @@ package hub
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/Irayago/Dreams-end/go-game-server/internal/world"
-	"github.com/google/uuid"
-
-	ws "github.com/coder/websocket"
 )
 
 // Hub maintains the set of active clients. Hub connects new client connections to the Client map, and disconnects from the map when they disconnect.
@@ -67,30 +63,30 @@ func (h *Hub) Run() {
 }
 
 // handler for managing weboscket connection to a client; gets passed to api.NewRouter()
-func (h *Hub) webSocketHandler(w http.ResponseWriter, r *http.Request) {
+// func (h *Hub) webSocketHandler(w http.ResponseWriter, r *http.Request) {
 
-	// before accepting WS connection, do following:
-	// 1. verify identity with JWT token; identity is defined by account name and playerId
-	// 2. check for available worlds; if none, create a new world and assign to client
+// 	// before accepting WS connection, do following:
+// 	// 1. verify identity with JWT token; identity is defined by account name and playerId
+// 	// 2. check for available worlds; if none, create a new world and assign to client
 
-	wsConn, err := ws.Accept(w, r, nil)
-	if err != nil {
-		fmt.Printf("Error accepting WebSocket connection: %v\n", err)
-		w.WriteHeader(500) // internal server error
-		w.Write(fmt.Appendf(nil, "Error accepting WebSocket connection: %v\n", err))
-		return
-	}
+// 	wsConn, err := ws.Accept(w, r, nil)
+// 	if err != nil {
+// 		fmt.Printf("Error accepting WebSocket connection: %v\n", err)
+// 		w.WriteHeader(500) // internal server error
+// 		w.Write(fmt.Appendf(nil, "Error accepting WebSocket connection: %v\n", err))
+// 		return
+// 	}
 
-	defer wsConn.CloseNow()
+// 	defer wsConn.CloseNow()
 
-	client := NewClient(wsConn, r)
-	client.connectionId = h.generateClientId() // generate unique client connection ID
-	h.connect <- client                        // send new client to connect channel for Hub to track
+// 	client := NewClient(wsConn, r)
+// 	client.connectionId = h.generateClientId() // generate unique client connection ID
+// 	h.connect <- client                        // send new client to connect channel for Hub to track
 
-	// before http router exits goroutine, need to start client read and write pumps
-	//go client.readPump(world)
-	//go client.writePump()
-}
+// 	// before http router exits goroutine, need to start client read and write pumps
+// 	//go client.readPump(world)
+// 	//go client.writePump()
+// }
 
 func (h *Hub) DisconnectClient(c *Client) error {
 	if c == nil {
@@ -121,11 +117,6 @@ func (h *Hub) ConnectClient(c *Client) error {
 	fmt.Printf("New client connected:\nIP: %v\nConnection ID: %v\n", c.ipAddr, c.connectionId)
 
 	return nil
-}
-
-func (h Hub) generateClientId() string {
-	id := uuid.NewString()
-	return string(id)
 }
 
 // client interfaces

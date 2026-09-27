@@ -15,11 +15,11 @@ type Client struct {
 	worldId      *world.World
 }
 
-func NewClient(conn *ws.Conn, request *http.Request) *Client {
+func NewClient(conn *ws.Conn, request *http.Request, connId string) *Client {
 	return &Client{
 		conn:         conn,
 		ipAddr:       request.RemoteAddr,
-		connectionId: "",
+		connectionId: connId,
 		playerName:   "",
 		worldId:      nil,
 	}

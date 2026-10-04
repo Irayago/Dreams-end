@@ -3,6 +3,8 @@ package hub
 import (
 	"fmt"
 
+	"sync"
+
 	"github.com/Irayago/Dreams-end/go-game-server/internal/world"
 )
 
@@ -12,6 +14,7 @@ import (
 For-Select pattern will be used for handling connect, disconnect, and broadcast channels.
 */
 type Hub struct {
+	mu         sync.Mutex
 	clients    map[string]*Client      // tracks active ws connections; key is clientId, value is Client struct ptr
 	worlds     map[string]*world.World // tracks available worlds; key is worldId, value is World struct ptr
 	connect    chan *Client            // renamed from register to connect for only tracking active WS connections
@@ -62,31 +65,7 @@ func (h *Hub) Run() {
 	}
 }
 
-// handler for managing weboscket connection to a client; gets passed to api.NewRouter()
-// func (h *Hub) webSocketHandler(w http.ResponseWriter, r *http.Request) {
-
-// 	// before accepting WS connection, do following:
-// 	// 1. verify identity with JWT token; identity is defined by account name and playerId
-// 	// 2. check for available worlds; if none, create a new world and assign to client
-
-// 	wsConn, err := ws.Accept(w, r, nil)
-// 	if err != nil {
-// 		fmt.Printf("Error accepting WebSocket connection: %v\n", err)
-// 		w.WriteHeader(500) // internal server error
-// 		w.Write(fmt.Appendf(nil, "Error accepting WebSocket connection: %v\n", err))
-// 		return
-// 	}
-
-// 	defer wsConn.CloseNow()
-
-// 	client := NewClient(wsConn, r)
-// 	client.connectionId = h.generateClientId() // generate unique client connection ID
-// 	h.connect <- client                        // send new client to connect channel for Hub to track
-
-// 	// before http router exits goroutine, need to start client read and write pumps
-// 	//go client.readPump(world)
-// 	//go client.writePump()
-// }
+// need to expose following Hub methods as client facing APIs in router.go:
 
 func (h *Hub) DisconnectClient(c *Client) error {
 	if c == nil {
@@ -117,6 +96,18 @@ func (h *Hub) ConnectClient(c *Client) error {
 	fmt.Printf("New client connected:\nIP: %v\nConnection ID: %v\n", c.ipAddr, c.connectionId)
 
 	return nil
+}
+
+func (h *Hub) GetNumOfClients() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return len(h.clients)
+}
+
+func (h *Hub) GetNumOfWorlds() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return len(h.worlds)
 }
 
 // client interfaces

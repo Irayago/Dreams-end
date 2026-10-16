@@ -2,40 +2,30 @@ package world
 
 type World struct {
 	WorldId        int // change to uuid
-	PlayerCount    int
-	PlayerCapacity int
+	PlayerCapacity int16
 	clientMap      map[Connection]*Player
 	playerMap      map[string]*Player
 	tickRate       int
-	outboundBuffer chan MessageInterface
-	inboundBuffer  chan MessageInterface
-	workerPool     chan *Worker // concurrent worker pool with max of 100 Workers
-	worldStore     WorldStore
+	//outboundBuffer chan MessageInterface
+	//inboundBuffer  chan MessageInterface
+	workerPool chan *Worker // concurrent worker pool with max of 100 Workers
+	worldStore WorldStore
 	//test messaging with JSON first before protobuff
 }
 
-// workerPool and messageBuffer workflow::
-/*
-
-
-
-
- */
-
 // need to figure out message struct and protobuf serialization
 
-func NewWorld(worldId int, playerCapacity int, tickRate int, worldStore WorldStore) *World {
+func NewWorld(worldId int, playerCapacity int16, tickRate int, worldStore WorldStore) *World {
 	return &World{
 		WorldId:        worldId,
-		PlayerCount:    0,
 		PlayerCapacity: playerCapacity,
 		clientMap:      make(map[Connection]*Player),
 		playerMap:      make(map[string]*Player),
 		tickRate:       tickRate,
-		outboundBuffer: make(chan MessageInterface, 100),
-		inboundBuffer:  make(chan MessageInterface, 100),
-		workerPool:     make(chan *Worker, 100),
-		worldStore:     worldStore,
+		//outboundBuffer: make(chan MessageInterface, 100), // commenting out for now; could be for control signalling
+		//inboundBuffer:  make(chan MessageInterface, 100),
+		workerPool: make(chan *Worker, 100),
+		worldStore: worldStore,
 	}
 }
 

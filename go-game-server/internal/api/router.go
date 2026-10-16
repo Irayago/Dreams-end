@@ -2,6 +2,9 @@ package api
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
 
 	"github.com/Irayago/Dreams-end/go-game-server/internal/hub"
 	ws "github.com/coder/websocket"
@@ -18,8 +21,8 @@ type Router struct {
 type HubInterface interface {
 	ConnectClient(client *hub.Client) error
 	DisconnectClient(client *hub.Client) error
-	GetNumOfClients() int
-	GetNumOfWorlds() int
+	GetNumOfClients() int16
+	GetNumOfWorlds() int16
 }
 
 func NewRouter(mainHub HubInterface) *Router {
@@ -34,7 +37,22 @@ func NewRouter(mainHub HubInterface) *Router {
 
 func (r *Router) Run(port string) {
 	r.RegisterRoutes()
-	r.router.Run(port) //blocking call to start the HTTP server
+	errc := make(chan error, 1)
+	go func() {
+		errc <- r.router.Run(port) //blocking call to start the HTTP server
+	}()
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt)
+
+	select {
+	case err := <-errc:
+		if err != nil {
+			log.Fatalf("Error starting HTTP server: %v\n", err)
+		}
+	case sig := <-sigs:
+		log.Fatalf("Received interrupt signal: %v", sig)
+	}
 }
 
 func (r *Router) RegisterRoutes() {
@@ -72,15 +90,9 @@ func (r *Router) websocketConnect(c *gin.Context) {
 
 	// defer wsConn.CloseNow() // commenting out for now since we want to keep the connection open
 
-	// create new Client
+	// create new Client and send to hub
 	client := hub.NewClient(wsConn, c.Request, generateClientId())
-	err = r.hubInt.ConnectClient(client)
-	if err != nil {
-		fmt.Printf("Error connecting client to hub: %v\n", err)
-		c.Writer.WriteHeader(500) // internal server error
-		c.Writer.Write(fmt.Appendf(nil, "Error connecting client to hub: %v\n", err))
-		return
-	}
+	r.hubInt.ConnectClient(client)
 
 	// before http router exits goroutine, need to start client read and write pumps
 	//go client.readPump(world)

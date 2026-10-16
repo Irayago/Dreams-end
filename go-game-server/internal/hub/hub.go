@@ -54,9 +54,12 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.connect:
-			h.ConnectClient(client)
+			h.RegisterClient(client)
+			if len(h.worlds) == 0 {
+				// if no worlds exist, wait for a new world or put client in queue
+			}
 		case client := <-h.disconnect:
-			h.DisconnectClient(client)
+			h.DeregisterClient(client)
 		case message := <-h.broadcast:
 			for _, client := range h.clients {
 				client.SendData(message)
@@ -65,9 +68,7 @@ func (h *Hub) Run() {
 	}
 }
 
-// need to expose following Hub methods as client facing APIs in router.go:
-
-func (h *Hub) DisconnectClient(c *Client) error {
+func (h *Hub) DeregisterClient(c *Client) error {
 	if c == nil {
 		return fmt.Errorf("Hub: Client connection nil")
 	}
@@ -82,7 +83,7 @@ func (h *Hub) DisconnectClient(c *Client) error {
 	return nil
 }
 
-func (h *Hub) ConnectClient(c *Client) error {
+func (h *Hub) RegisterClient(c *Client) error {
 	if c == nil {
 		return fmt.Errorf("Hub: Client connection nil")
 	}
@@ -98,16 +99,28 @@ func (h *Hub) ConnectClient(c *Client) error {
 	return nil
 }
 
-func (h *Hub) GetNumOfClients() int {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	return len(h.clients)
+// need to expose following Hub methods as client facing APIs in router.go:
+
+func (h *Hub) ConnectClient(c *Client) error {
+	h.connect <- c
+	return nil
 }
 
-func (h *Hub) GetNumOfWorlds() int {
+func (h *Hub) DisconnectClient(c *Client) error {
+	h.disconnect <- c
+	return nil
+}
+
+func (h *Hub) GetNumOfClients() int16 {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	return len(h.worlds)
+	return int16(len(h.clients))
+}
+
+func (h *Hub) GetNumOfWorlds() int16 {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return int16(len(h.worlds))
 }
 
 // client interfaces
